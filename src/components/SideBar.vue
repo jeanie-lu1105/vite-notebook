@@ -18,8 +18,8 @@
 import { Auth } from '@/apis/auth';
 import Avatar from './Avatar.vue';
 function onLogout() {
-    Auth.logout().then((res: any) => {
-        console.log(res)
+    Auth.logout().then(() => {
+        console.log('logout user')
     }).catch((err: any) => {
         console.log(err)
     })

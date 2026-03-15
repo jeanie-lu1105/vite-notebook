@@ -5,8 +5,22 @@
 </template>
 
 <script setup lang="ts">
+import { Auth } from '@/apis/auth'
+import router from '@/router'
+import { onMounted } from 'vue'
+
 
 const msg = '笔记详情页'
+
+onMounted(() => {
+    Auth.getInfo().then((res: any) => {
+        if (!res.isLogin) {
+            router.push({ path: '/login' })
+        }
+    }).catch((err: any) => {
+        console.log(err)
+    })
+})
 
 </script>
 

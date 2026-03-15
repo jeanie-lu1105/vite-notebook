@@ -4,10 +4,41 @@
 
 
 <script setup lang="ts">
-let user = {
-    username: 'hunger'
-}
-let slug = "H"
+import { Auth } from '@/apis/auth';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { onBus, offBus } from '@/helpers/bus';
+
+const user = ref({ username: 'user' });
+const slug = computed(() => user.value.username.charAt(0));
+
+const updateUser = (newUser: { username: string }) => {
+    if (newUser?.username) {
+        user.value.username = newUser.username;
+    }
+};
+
+const onUserUpdated = (event: Event) => {
+    const customEvent = event as CustomEvent;
+    updateUser(customEvent.detail);
+};
+
+onMounted(() => {
+    Auth.getInfo()
+        .then((res: any) => {
+            if (res.isLogin) {
+                updateUser(res.data);
+            }
+        })
+        .catch((err: any) => {
+            console.error(err);
+        });
+
+    onBus('user:updated', onUserUpdated);
+});
+
+onUnmounted(() => {
+    offBus('user:updated', onUserUpdated);
+});
 </script>
 
 

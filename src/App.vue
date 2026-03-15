@@ -1,5 +1,10 @@
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import SideBar from './components/SideBar.vue';
+
+onMounted(() => {
+  console.log('app mounted')
+})
 </script>
 
 <template>

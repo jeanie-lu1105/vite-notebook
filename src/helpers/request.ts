@@ -2,7 +2,7 @@ import axios from "axios";
 
 axios.defaults.headers.post["Content-Type"] =
   "application/x-www-form-urlencoded";
-axios.defaults.baseURL = "https://note-server.hunger-valley.com";
+axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL;
 axios.defaults.withCredentials = true;
 
 export function request(url: string, method: string = "GET", data?: {}) {
@@ -11,7 +11,7 @@ export function request(url: string, method: string = "GET", data?: {}) {
       url,
       method,
       validateStatus(status: number) {
-        return status >= 200 && status < 300;
+        return status >= 200 && status < 500;
       },
     };
     if (method.toLowerCase() === "get") {
@@ -21,15 +21,15 @@ export function request(url: string, method: string = "GET", data?: {}) {
     }
     axios(option)
       .then((res) => {
-        console.log("response.  ", res);
         if (res.status !== 200) {
+          console.log("res != 200");
           reject(res.data);
         } else {
           resolve(res.data);
         }
       })
-      .catch((_err) => {
-        reject("Internet error");
+      .catch((err) => {
+        reject(err);
       });
   });
 }

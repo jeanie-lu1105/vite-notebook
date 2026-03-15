@@ -33,7 +33,11 @@
 
 <script setup lang="ts">
 import { Auth } from '@/apis/auth';
+import { emitBus } from '@/helpers/bus';
+import router from '@/router';
 import { ref } from 'vue';
+
+
 
 const isShowLogin = ref(true);
 const isShowRegister = ref(false);
@@ -49,13 +53,6 @@ const register = ref({
     notice: '创建账号后，请记住用户名和密码',
     isError: false
 });
-
-Auth.getInfo().then((res: any) => {
-    console.log(res)
-}).catch((err: any) => {
-    console.log(err)
-})
-
 
 
 function showLogin() {
@@ -77,13 +74,16 @@ function onRegister() {
         register.value.notice = '密码长度为6~16个字符'
         return
     }
-    register.value.isError = false
-    register.value.notice = ''
-    console.log(`start register..., username: ${register.value.username} , password: ${register.value.password}`)
+
     Auth.register(register.value.username, register.value.password).then((res: any) => {
         console.log(res)
+        register.value.isError = false
+        register.value.notice = '账号创建成功，请登录'
+        router.push({ path: '/notebooks' })
+        emitBus('user:updated', register.value.username)
     }).catch((err: any) => {
-        console.log(err)
+        register.value.isError = true
+        register.value.notice = err.msg || '注册失败，请稍后再试'
     })
 
 }
@@ -98,14 +98,16 @@ function onLogin() {
         login.value.notice = '密码长度为6~16个字符'
         return
     }
-    login.value.isError = false
-    login.value.notice = ''
 
-    console.log(`start login..., username: ${login.value.username} , password: ${login.value.password}`)
     Auth.login(login.value.username, login.value.password).then((res: any) => {
-        console.log(res)
+        login.value.isError = false
+        login.value.notice = ''
+        emitBus('user:updated', res.data)
+        router.push({ path: '/notebooks' })
+        console.log('start redirect to ...')
     }).catch((err: any) => {
-        console.log(err)
+        login.value.isError = true
+        login.value.notice = err.msg || '登录失败，请稍后再试'
     })
 }
 
