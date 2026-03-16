@@ -61,5 +61,6 @@ li {
 #app {
   display: flex;
   align-items: stretch;
+  flex-grow: 1;
 }
 </style>
