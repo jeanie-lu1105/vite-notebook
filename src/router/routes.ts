@@ -1,30 +1,24 @@
-import HelloWorld from "@/components/HelloWorld.vue";
-import Login from "@/components/Login.vue";
-import NotebookList from "@/components/NotebookList.vue";
-import NoteDetail from "@/components/NoteDetail.vue";
-import TrashDetail from "@/components/TrashDetail.vue";
-
 const routes = [
   {
     path: "/",
     name: "HelloWorld",
-    component: HelloWorld,
+    component: () => import("@/components/HelloWorld.vue"),
   },
   {
     path: "/login",
-    component: Login,
+    component: () => import("@/components/Login.vue"),
   },
   {
     path: "/notebooks",
-    component: NotebookList,
+    component: () => import("@/components/NotebookList.vue"),
   },
   {
-    path: "/note/:noteId",
-    component: NoteDetail,
+    path: "/note",
+    component: () => import("@/components/NoteDetail.vue"),
   },
   {
-    path: "/trash/:noteId",
-    component: TrashDetail,
+    path: "/trash",
+    component: () => import("@/components/TrashDetail.vue"),
   },
 ];
 

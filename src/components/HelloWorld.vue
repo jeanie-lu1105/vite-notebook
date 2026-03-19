@@ -21,6 +21,8 @@
 }
 
 .button-row {
+  margin-left: 30px;
+  margin-left: 30px;
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;

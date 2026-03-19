@@ -1,5 +1,6 @@
 import { request } from "@/helpers/request";
 import { friendlyDate } from "@/helpers/util";
+import { de } from "element-plus/es/locale/index.mjs";
 
 const URL = {
   GET: "/notebooks",

@@ -9,8 +9,8 @@
             <div class="layout">
                 <h3>Notebook List{{ notebookList.length }}</h3>
                 <div class="book-list">
-                    <router-link v-for="notebook in notebookList" :key="notebook.id" :to="`/notebooks/${notebook.id}`"
-                        class="notebook">
+                    <router-link v-for="notebook in notebookList" :key="notebook.id"
+                        :to="`/note?notebookId=${notebook.id}`" class="notebook">
                         <div>
                             <span class="iconfont icon-notebook"></span>{{ notebook.title }}
                             <span>{{ notebook.noteCounts }}</span>
@@ -30,19 +30,13 @@
 import { Auth } from '@/apis/auth';
 import { NotebooksRequest } from '@/apis/notebooks';
 import { friendlyDate } from '@/helpers/util';
+import type { Notebook } from '@/model/note.interface';
 import router from '@/router';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { ref } from 'vue';
 import { onMounted } from 'vue';
 
-interface Notebook {
-    id: string;
-    title: string;
-    noteCounts: number;
-    createdAt: string;
-    updatedAt: string;
-    userId: string;
-    displayDate: string
-}
+
 
 let notebookList = ref<Notebook[]>([])
 
@@ -64,51 +58,65 @@ onMounted(() => {
 })
 
 const onEdit = (notebook: Notebook) => {
-    console.log(notebook)
-    let title = prompt('Edit Notebook Title', notebook.title)
-    if (!title?.trim()) {
-        alert('Notebook title cannot be empty')
-        return
-    }
-    NotebooksRequest.update(notebook.id, { title }).then((res: any) => {
-        if (res?.data) {
-            notebook.title = title
-        }
-        alert(res.msg || 'Notebook updated successfully')
-    }).catch((err: any) => {
-        console.log(err)
+    ElMessageBox.prompt('Please enter the notebook name', 'Edit Notebook', {
+        confirmButtonText: 'OK',
+        cancelButtonText: 'Cancel',
+        inputValue: notebook.title,
+        inputPattern: /^.{1,30}$/,
+        inputErrorMessage: 'Name must be between 1 and 30 characters',
     })
+        .then(({ value }) => {
+            return NotebooksRequest.update(notebook.id, { title: value }).then((res: any) => {
+                notebook.title = value
+                ElMessage.success(res.msg || 'Notebook updated successfully');
+            })
+        }).catch(() => {
+            ElMessage.info('Edit notebook cancelled');
+        });
 }
 
+
+
 const onDelete = (notebook: Notebook) => {
-    let isConfirm = confirm('Are you sure to delete this notebook?')
-    if (isConfirm) {
+    ElMessageBox.confirm(`Are you sure to delete this notebook ${notebook.title}?`, 'Delete Notebook', {
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'No',
+        type: 'warning',
+    }).then(() => {
         NotebooksRequest.delete(notebook.id).then((res: any) => {
             let index = notebookList.value.findIndex(item => item.id === notebook.id)
             notebookList.value.splice(index, 1)
-            alert(res.msg || 'Notebook deleted successfully')
+            ElMessage.success(res.msg || 'Notebook deleted successfully');
         }).catch((err: any) => {
             console.log(err)
         })
-    }
+    }).catch(() => {
+        ElMessage.info('Delete notebook cancelled');
+    });
+
 }
 
 const onCreateNotebook = () => {
-    let title = prompt('请输入笔记本名称')
-    if (!title?.trim()) {
-        alert('笔记本名称不能为空')
-        return
-    }
-    NotebooksRequest.add({ title }).then((res: any) => {
-        if (res?.data) {
-            res.data.displayDate = friendlyDate(res.data.createdAt)
-            notebookList.value.unshift(res.data)
-        }
-
-    }).catch((err: any) => {
-        console.log(err)
+    ElMessageBox.prompt('Please enter the notebook name', 'Create Notebook', {
+        confirmButtonText: 'OK',
+        cancelButtonText: 'Cancel',
+        inputPattern: /^.{1,30}$/,
+        inputErrorMessage: 'Name must be between 1 and 30 characters',
     })
+        .then(({ value }) => {
+            return NotebooksRequest.add({ title: value }).then((res: any) => {
+                if (res?.data) {
+                    ElMessage.success(res.msg || 'Notebook created successfully');
+                    res.data.displayDate = friendlyDate(res.data.createdAt)
+                    notebookList.value.unshift(res.data)
+                }
+
+            })
+        }).catch(() => {
+            ElMessage.info('Create notebook cancelled');
+        });
 }
+
 
 </script>
 

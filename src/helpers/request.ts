@@ -1,4 +1,5 @@
 import axios from "axios";
+import { ElMessage, ElMessageBox } from "element-plus";
 
 axios.defaults.headers.post["Content-Type"] =
   "application/x-www-form-urlencoded";
@@ -21,15 +22,16 @@ export function request(url: string, method: string = "GET", data?: {}) {
     }
     axios(option)
       .then((res) => {
-        if (res.status !== 200) {
-          console.log("res != 200");
-          reject(res.data);
-        } else {
+        if (res.status === 200) {
           resolve(res.data);
+        } else {
+          ElMessage.error(res.data.msg || "An error occurred");
+          reject(res.data);
         }
       })
       .catch((err) => {
-        reject(err);
+        ElMessage.error(err.message || "Network error");
+        reject({ message: err.message || "Network error" });
       });
   });
 }
