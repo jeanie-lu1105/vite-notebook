@@ -111,7 +111,7 @@ const onAddNote = () => {
 const handleCommand = (notebookId: string) => {
     console.log(notebookId)
     if (notebookId === 'trash') {
-        router.push({ path: '/trash' })
+        return router.push({ path: '/trash' })
     } else {
         const notebook = notebooks.value.find(item => item.id === notebookId)
         if (notebook) {

@@ -1,6 +1,6 @@
 <template>
     <div id="trash-detail">
-        <h1>{{ $route.params.noteId }}</h1>
+        <h1>Trash page</h1>
     </div>
 </template>
 
@@ -15,9 +15,9 @@ const router = useRouter()
 
 onMounted(() => {
     Auth.getInfo().then((res: any) => {
-
+        console.log('check login', res)
         if (!res.isLogin) {
-            router.push({ path: '/login' })
+            return router.push({ path: '/login' })
         }
     }).catch((err: any) => {
         console.log(err)

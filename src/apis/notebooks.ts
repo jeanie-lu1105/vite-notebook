@@ -1,6 +1,5 @@
 import { request } from "@/helpers/request";
 import { friendlyDate } from "@/helpers/util";
-import { de } from "element-plus/es/locale/index.mjs";
 
 const URL = {
   GET: "/notebooks",
@@ -20,6 +19,8 @@ export const NotebooksRequest = {
           );
           res.data = res.data.map((notebook: any) => {
             notebook.displayDate = friendlyDate(notebook.createdAt);
+            notebook.createdAtFriendly = friendlyDate(notebook.createdAt);
+            notebook.updatedAtFriendly = friendlyDate(notebook.updatedAt);
             return notebook;
           });
           resolve(res);

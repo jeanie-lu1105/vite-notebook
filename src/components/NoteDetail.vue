@@ -18,9 +18,10 @@
                         placeholder="输入标题">
                 </div>
                 <div class="editor">
-                    <codemirror v-model="curNote.content" :options="cmOptions" v-show="!isShowPreview"
-                        @input="onUpdateNote" @inputRead="statusText = '正在输入...'"></codemirror>
-                    <!--  <textarea v-show="isShowPreview"  v-model:value="curNote.content" @input="onUpdateNote" @keydown="statusText='正在输入...'" placeholder="输入内容, 支持 markdown 语法"></textarea>-->
+                    <!-- <codemirror v-model="curNote.content" :options="cmOptions" v-show="!isShowPreview"
+                        @input="onUpdateNote" @inputRead="statusText = '正在输入...'"></codemirror> -->
+                    <textarea v-show="!isShowPreview" :value="curNote.content" @input="onUpdateNote"
+                        @keydown="statusText = '正在输入...'" placeholder="输入内容, 支持 markdown 语法"></textarea>
                     <div class="preview markdown-body" v-html="previewContent" v-show="isShowPreview">
                     </div>
                 </div>
@@ -38,23 +39,19 @@ import type { Note, Notebook } from '@/model/note.interface'
 import MarkdownIt from 'markdown-it'
 import { useRoute, useRouter } from 'vue-router'
 import { NoteRequest } from '@/apis/note'
-import _ from 'lodash'
+import _, { reject } from 'lodash'
+import { NotebooksRequest } from '@/apis/notebooks'
 
 const router = useRouter()
-let curBook: Notebook = {} as Notebook
+let curBook = ref<Notebook>({} as Notebook)
 let md = new MarkdownIt()
 let statusText = '笔记未改动';
-let curNote: Note = {} as Note
+let curNote = ref<Note>({} as Note)
 let isShowPreview = ref<Boolean>(false)
-const cmOptions = {
-    tabSize: 4,
-    mode: 'text/x-markdown',
-    theme: 'neat',
-    lineNumbers: false,
-    line: true,
-}
+let notebookList = ref([]);
+let notes = ref<Note[]>([] as Note[])
 const previewContent = () => {
-    return md.render(curNote.content || '')
+    return md.render(curNote.value.content || '')
 }
 const route = useRoute()
 onMounted(() => {
@@ -64,12 +61,27 @@ onMounted(() => {
         }
     })
 
+    NotebooksRequest.getAll().then((res: any) => {
+        let notebooks = res.data;
+        notebookList.value = notebooks;
+        curBook.value = notebooks[0];
+
+        NoteRequest.getNotes(notebooks[0].id).then((res: any) => {
+            let notesList = res.data;
+            notes.value = notesList;
+            curNote.value = notesList[0]
+        }).catch((err: any) => {
+            reject(err)
+        })
+    }).catch((err: any) => {
+        reject(err)
+    })
+
 })
 
 const onUpdateNote = _.debounce(() => {
-    if (curNote.id) return
-    NoteRequest.updateNote(curNote.id, { title: curNote.title, content: curNote.content }).then((data: any) => {
-        console.log(data)
+    if (!curNote.value.id) return
+    NoteRequest.updateNote(curNote.value.id, { title: curNote.value.title, content: curNote.value.content }).then((data: any) => {
         statusText = '已保存'
     }).catch((data: any) => {
         statusText = '保存出错'
@@ -77,7 +89,7 @@ const onUpdateNote = _.debounce(() => {
 }, 3000)
 
 const onDeleteNote = () => {
-    return NoteRequest.deleteNote(curNote.id).then((res: any) => {
+    return NoteRequest.deleteNote(curNote.value.id).then((res: any) => {
         router.replace({ path: '/note' })
     })
 }
